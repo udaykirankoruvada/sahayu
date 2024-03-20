@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sahayu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .chart-container {
+            width: 45%;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;color: blue;">SAHAYU</h1>
+    <h2>Temperature and Humidity Data</h2>
+    <div class="container">
+        <div class="chart-container">
+            <canvas id="temperatureChart" width="400" height="300"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="humidityChart" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // ThingSpeak Channel ID and Read API Key
+        const channelID = '2476419';
+        const apiKey = 'BY6N996SRI6CRC44';
+
+        // ThingSpeak Read API Endpoint
+        const apiEndpoint = `https://api.thingspeak.com/channels/${channelID}/feeds.json`;
+
+        // Fetch data from ThingSpeak
+        fetch(`${apiEndpoint}?api_key=${apiKey}`)
+            .then(response => response.json())
+            .then(data => {
+                const temperatureData = data.feeds.map(feed => parseFloat(feed.field1));
+                const humidityData = data.feeds.map(feed => parseFloat(feed.field2));
+                const labels = data.feeds.map(feed => feed.created_at);
+
+                // Render Temperature Chart using Chart.js
+                const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+                const temperatureChart = new Chart(temperatureCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: temperatureData,
+                            borderColor: 'rgb(255, 99, 132)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Render Humidity Chart using Chart.js
+                const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+                const humidityChart = new Chart(humidityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Humidity (%)',
+                            data: humidityData,
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    </script>
+</body>
+</html>
